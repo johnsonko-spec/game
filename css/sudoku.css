@@ -1,0 +1,213 @@
+/* --- Mini Sudoku 6x6 Game Specific Styles --- */
+
+.sudoku-game-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+/* Header Bar */
+.sdk-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-glass);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.sdk-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sdk-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.sdk-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1.25rem;
+}
+
+.sdk-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.sdk-stat-val {
+  font-family: 'Inter', monospace;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+}
+
+/* 6x6 Board Wrapper */
+.sdk-grid-wrapper {
+  background: rgba(0, 0, 0, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+
+.sdk-grid-board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+/* Cell Styles */
+.sdk-cell {
+  aspect-ratio: 1;
+  background: rgba(18, 18, 37, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: background 0.15s ease, outline 0.15s ease, color 0.15s ease;
+}
+
+.sdk-cell.is-given {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sdk-cell.is-user {
+  color: var(--accent-cyan);
+}
+
+.sdk-cell.is-selected {
+  outline: 3px solid var(--accent-cyan);
+  background: rgba(0, 242, 254, 0.2);
+  z-index: 2;
+}
+
+.sdk-cell.is-highlight-num {
+  background: rgba(118, 75, 162, 0.35);
+}
+
+.sdk-cell.is-conflict {
+  color: #ff5252;
+  background: rgba(255, 82, 82, 0.25);
+  animation: cardShake 0.3s ease-in-out;
+}
+
+/* 2x3 Block Boundaries */
+.border-right-thick {
+  border-right: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.border-bottom-thick {
+  border-bottom: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Pencil Notes Sub-Grid (3 cols x 2 rows) */
+.sdk-notes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  width: 100%;
+  height: 100%;
+  padding: 2px;
+}
+
+.sdk-note-num {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Controls & Keypad */
+.sdk-controls {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sdk-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sdk-tool-btn {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.sdk-tool-btn.is-active {
+  background: rgba(0, 242, 254, 0.2);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.sdk-keypad {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+}
+
+.sdk-key-btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  padding: 0.85rem 0;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.sdk-key-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+/* Responsive Sudoku Board */
+@media (max-width: 600px) {
+  .sdk-cell {
+    font-size: 1.2rem;
+  }
+
+  .sdk-note-num {
+    font-size: 0.55rem;
+  }
+
+  .sdk-key-btn {
+    font-size: 1.1rem;
+    padding: 0.6rem 0;
+  }
+}

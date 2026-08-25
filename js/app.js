@@ -44,7 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
       desc: '配對相同可愛動物，連線轉折不超過 2 次！',
       status: 'active'
     },
-    { id: 'game4', name: '密碼破解', icon: '🔐', desc: '邏輯推理猜數字', status: 'coming_soon' },
+    {
+      id: 'sudoku',
+      name: '迷你數獨',
+      icon: '🧩',
+      desc: '填入 1~6 數字，同行同列同宮不重複！',
+      status: 'active'
+    },
     { id: 'game5', name: '算術快手', icon: '🧮', desc: '極速心算與符號組合', status: 'coming_soon' },
     { id: 'game6', name: '記憶矩陣', icon: '🧠', desc: '空間與順序記憶挑戰', status: 'coming_soon' }
   ];
@@ -153,6 +159,20 @@ document.addEventListener('DOMContentLoaded', () => {
         controller.init();
       } else if (gameId === 'connect') {
         const controller = new window.ConnectGameController(
+          fullOverlay,
+          todayStr,
+          playerName,
+          (completed) => {
+            if (completed) {
+              showAdThenLeaderboard(gameId);
+            } else {
+              collapseToHomeGrid();
+            }
+          }
+        );
+        controller.init();
+      } else if (gameId === 'sudoku') {
+        const controller = new window.SudokuGameController(
           fullOverlay,
           todayStr,
           playerName,
