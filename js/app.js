@@ -30,7 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
       desc: '給定 16 張聽牌手牌，點擊找出所有能胡的牌！',
       status: 'active'
     },
-    { id: 'game2', name: '數獨迷宮', icon: '🧩', desc: '每日精選邏輯關卡', status: 'coming_soon' },
+    {
+      id: 'memory',
+      name: '撲克記憶',
+      icon: '🃏',
+      desc: '翻牌尋找 8 對相同撲克數字，考驗極速記憶！',
+      status: 'active'
+    },
     { id: 'game3', name: '成語大師', icon: '✍️', desc: '填字猜詞每日考驗', status: 'coming_soon' },
     { id: 'game4', name: '密碼破解', icon: '🔐', desc: '邏輯推理猜數字', status: 'coming_soon' },
     { id: 'game5', name: '算術快手', icon: '🧮', desc: '極速心算與符號組合', status: 'coming_soon' },
@@ -102,18 +108,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (gameId === 'mahjong') {
-      const completion = window.GameStorage.getGameCompletion('mahjong', todayStr);
+    const completion = window.GameStorage.getGameCompletion(gameId, todayStr);
 
-      // Hide grid and show full-area expansion overlay (Option C)
-      cardsGrid.style.display = 'none';
-      fullOverlay.classList.add('is-visible');
+    cardsGrid.style.display = 'none';
+    fullOverlay.classList.add('is-visible');
 
-      if (completion) {
-        // Show 5s Sponsor Ad first, then Leaderboard
-        showAdThenLeaderboard(gameId);
-      } else {
-        // Start Game
+    if (completion) {
+      // Show 5s Sponsor Ad first, then Leaderboard
+      showAdThenLeaderboard(gameId);
+    } else {
+      if (gameId === 'mahjong') {
         const controller = new window.MahjongGameController(
           fullOverlay,
           todayStr,
@@ -122,17 +126,34 @@ document.addEventListener('DOMContentLoaded', () => {
             if (completed) {
               showAdThenLeaderboard(gameId);
             } else {
-              // Collapse back to grid
-              fullOverlay.classList.remove('is-visible');
-              fullOverlay.innerHTML = '';
-              cardsGrid.style.display = 'grid';
-              renderCards();
+              collapseToHomeGrid();
+            }
+          }
+        );
+        controller.init();
+      } else if (gameId === 'memory') {
+        const controller = new window.MemoryGameController(
+          fullOverlay,
+          todayStr,
+          playerName,
+          (completed) => {
+            if (completed) {
+              showAdThenLeaderboard(gameId);
+            } else {
+              collapseToHomeGrid();
             }
           }
         );
         controller.init();
       }
     }
+  }
+
+  function collapseToHomeGrid() {
+    fullOverlay.classList.remove('is-visible');
+    fullOverlay.innerHTML = '';
+    cardsGrid.style.display = 'grid';
+    renderCards();
   }
 
   // 5. Show 5s Sponsor Ad then transition to Leaderboard
@@ -147,6 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. Display Leaderboard in Full Overlay View with Realtime Sync
   function showLeaderboardView(gameId) {
     const playerName = playerInput.value.trim();
+    const gameObj = gamesList.find(g => g.id === gameId);
+    const titleText = gameObj ? gameObj.name : '每日遊戲';
 
     fullOverlay.innerHTML = `
       <div class="lb-view-wrapper">
@@ -162,16 +185,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Realtime subscription to Firebase cross-device database
     window.GameStorage.subscribeRealtimeLeaderboard(gameId, todayStr, (realtimeList) => {
-      window.LeaderboardUI.renderLeaderboard(mount, realtimeList, playerName, '麻將聽牌 今日跨裝置實時排行榜');
+      window.LeaderboardUI.renderLeaderboard(mount, realtimeList, playerName, `${titleText} 今日跨裝置實時排行榜`);
     });
 
     const backBtn = fullOverlay.querySelector('#lb-back-btn');
     if (backBtn) {
       backBtn.addEventListener('click', () => {
-        fullOverlay.classList.remove('is-visible');
-        fullOverlay.innerHTML = '';
-        cardsGrid.style.display = 'grid';
-        renderCards();
+        collapseToHomeGrid();
       });
     }
   }
