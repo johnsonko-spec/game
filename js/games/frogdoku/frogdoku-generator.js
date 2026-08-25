@@ -1,40 +1,61 @@
 /**
- * Frogdoku 5x5 Board & Color Region Generator with Unique Solution Safeguard
+ * Frogdoku Board & Color Region Generator with Dynamic Sizes (4x4, 5x5, 6x6)
  */
 
 /**
- * Generate 5 valid non-adjacent frog positions (Queens problem with no 8-neighbor contact)
+ * Generate N valid non-adjacent frog positions for grid size N
+ * @param {number} size 4, 5, or 6
  * @param {Function} rng 
  * @returns {Array<{r: number, c: number}>}
  */
-function generateValidFrogPositions(rng) {
-  // All 10 valid 5-queens solutions on 5x5 board without 8-neighbor contact:
-  const validSolutions = [
-    [0, 2, 4, 1, 3],
-    [0, 3, 1, 4, 2],
-    [1, 3, 0, 2, 4],
-    [1, 4, 2, 0, 3],
-    [2, 0, 3, 1, 4],
-    [2, 4, 1, 3, 0],
-    [3, 0, 2, 4, 1],
-    [3, 1, 4, 2, 0],
-    [4, 1, 3, 0, 2],
-    [4, 2, 0, 3, 1]
-  ];
+function generateValidFrogPositions(size, rng) {
+  const solutionsMap = {
+    4: [
+      [1, 3, 0, 2],
+      [2, 0, 3, 1]
+    ],
+    5: [
+      [0, 2, 4, 1, 3],
+      [0, 3, 1, 4, 2],
+      [1, 3, 0, 2, 4],
+      [1, 4, 2, 0, 3],
+      [2, 0, 3, 1, 4],
+      [2, 4, 1, 3, 0],
+      [3, 0, 2, 4, 1],
+      [3, 1, 4, 2, 0],
+      [4, 1, 3, 0, 2],
+      [4, 2, 0, 3, 1]
+    ],
+    6: [
+      [1, 4, 0, 3, 5, 2],
+      [2, 5, 1, 4, 0, 3],
+      [3, 0, 4, 1, 5, 2],
+      [4, 1, 5, 2, 0, 3],
+      [0, 2, 4, 1, 5, 3],
+      [0, 3, 1, 4, 2, 5],
+      [0, 4, 2, 5, 1, 3],
+      [3, 5, 1, 4, 2, 0],
+      [5, 2, 4, 1, 3, 0],
+      [5, 3, 1, 4, 0, 2]
+    ]
+  };
 
-  const pickIdx = Math.floor(rng() * validSolutions.length);
-  const sol = validSolutions[pickIdx];
+  const pool = solutionsMap[size] || solutionsMap[5];
+  const pickIdx = Math.floor(rng() * pool.length);
+  const sol = pool[pickIdx];
+
   return sol.map((c, r) => ({ r, c }));
 }
 
 /**
- * Partition 5x5 grid into 5 connected color regions, each containing exactly 1 frog
+ * Partition N x N grid into N connected color regions, each containing exactly 1 frog
+ * @param {number} size N
  * @param {Array<{r: number, c: number}>} frogPositions 
  * @param {Function} rng 
- * @returns {Array<Array<number>>} 5x5 grid of region IDs (0..4)
+ * @returns {Array<Array<number>>} N x N grid of region IDs (0..N-1)
  */
-function partitionColorRegions(frogPositions, rng) {
-  const grid = Array.from({ length: 5 }, () => new Array(5).fill(-1));
+function partitionColorRegions(size, frogPositions, rng) {
+  const grid = Array.from({ length: size }, () => new Array(size).fill(-1));
   const regionQueues = [];
 
   // Seed each region with one frog position
@@ -50,13 +71,13 @@ function partitionColorRegions(frogPositions, rng) {
     { dr: 0, dc: 1 }
   ];
 
-  let unassigned = 25 - 5;
+  let unassigned = (size * size) - size;
 
   while (unassigned > 0) {
     let grewAny = false;
 
     // Pick region order randomly
-    const regionOrder = [0, 1, 2, 3, 4];
+    const regionOrder = Array.from({ length: size }, (_, i) => i);
     for (let i = regionOrder.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       [regionOrder[i], regionOrder[j]] = [regionOrder[j], regionOrder[i]];
@@ -66,20 +87,18 @@ function partitionColorRegions(frogPositions, rng) {
       const q = regionQueues[regionId];
       if (q.length === 0) continue;
 
-      // Find candidates around current region cells
       const candidates = [];
       q.forEach(cell => {
         dirs.forEach(d => {
           const nr = cell.r + d.dr;
           const nc = cell.c + d.dc;
-          if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && grid[nr][nc] === -1) {
+          if (nr >= 0 && nr < size && nc >= 0 && nc < size && grid[nr][nc] === -1) {
             candidates.push({ r: nr, c: nc });
           }
         });
       });
 
       if (candidates.length > 0) {
-        // Pick one candidate randomly
         const pick = candidates[Math.floor(rng() * candidates.length)];
         grid[pick.r][pick.c] = regionId;
         q.push(pick);
@@ -91,14 +110,13 @@ function partitionColorRegions(frogPositions, rng) {
 
     // Safeguard fallback if disconnected
     if (!grewAny && unassigned > 0) {
-      for (let r = 0; r < 5; r++) {
-        for (let c = 0; c < 5; c++) {
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
           if (grid[r][c] === -1) {
-            // Assign to adjacent region
             for (const d of dirs) {
               const nr = r + d.dr;
               const nc = c + d.dc;
-              if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && grid[nr][nc] !== -1) {
+              if (nr >= 0 && nr < size && nc >= 0 && nc < size && grid[nr][nc] !== -1) {
                 grid[r][c] = grid[nr][nc];
                 unassigned--;
                 break;
@@ -114,37 +132,43 @@ function partitionColorRegions(frogPositions, rng) {
 }
 
 /**
- * Generate daily Frogdoku 5x5 puzzle
+ * Generate daily Frogdoku puzzle with dynamic size based on difficulty:
+ * 20% Easy (4x4), 40% Medium (5x5), 40% Hard (6x6)
  * @param {string} dateStr YYYY-MM-DD
- * @returns {{ colorGrid: Array<Array<number>>, frogPositions: Array<{r: number, c: number}>, difficultyName: string, difficultyKey: string }}
+ * @returns {{ size: number, colorGrid: Array<Array<number>>, frogPositions: Array<{r: number, c: number}>, difficultyName: string, difficultyKey: string }}
  */
 function generateDailyFrogdoku(dateStr) {
   const seed = window.DailySeed.getSeedFromDate(`${dateStr}_frogdoku`);
   const rng = window.DailySeed.createSeededRandom(seed);
 
-  // 1. Determine Difficulty Level (20% Easy / 40% Medium / 40% Hard)
+  // 1. Determine Difficulty Level & Size (20% Easy 4x4 / 40% Medium 5x5 / 40% Hard 6x6)
   const randVal = Math.floor(rng() * 100);
-  let difficultyName = '中等';
+  let difficultyName = '中等 (5x5)';
   let difficultyKey = 'medium';
+  let size = 5;
 
   if (randVal < 20) {
-    difficultyName = '簡單';
+    difficultyName = '簡單 (4x4)';
     difficultyKey = 'easy';
+    size = 4;
   } else if (randVal < 60) {
-    difficultyName = '中等';
+    difficultyName = '中等 (5x5)';
     difficultyKey = 'medium';
+    size = 5;
   } else {
-    difficultyName = '困難';
+    difficultyName = '困難 (6x6)';
     difficultyKey = 'hard';
+    size = 6;
   }
 
-  // 2. Generate valid solution frogs
-  const frogPositions = generateValidFrogPositions(rng);
+  // 2. Generate valid solution frogs for grid size
+  const frogPositions = generateValidFrogPositions(size, rng);
 
-  // 3. Partition 5 connected color regions
-  const colorGrid = partitionColorRegions(frogPositions, rng);
+  // 3. Partition N connected color regions
+  const colorGrid = partitionColorRegions(size, frogPositions, rng);
 
   return {
+    size,
     colorGrid,
     frogPositions,
     difficultyName,

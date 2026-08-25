@@ -1,4 +1,4 @@
-/* --- Frogdoku 5x5 Game Specific Styles --- */
+/* --- Frogdoku Game Specific Styles (4x4, 5x5, 6x6 Dynamic Sizes) --- */
 
 .frogdoku-game-panel {
   display: flex;
@@ -58,22 +58,6 @@
   color: var(--accent-cyan);
 }
 
-.fgd-hearts-box {
-  display: flex;
-  align-items: center;
-  gap: 0.2rem;
-  font-size: 1.2rem;
-}
-
-.fgd-heart {
-  transition: transform 0.2s ease;
-}
-
-.fgd-heart.is-lost {
-  opacity: 0.4;
-  filter: grayscale(1);
-}
-
 /* Rules Bar */
 .fgd-rules-tags {
   display: flex;
@@ -93,48 +77,24 @@
   color: var(--text-main);
 }
 
-/* Toast */
-.fgd-toast {
-  background: rgba(118, 75, 162, 0.4);
-  border: 1px solid rgba(118, 75, 162, 0.6);
-  color: #ffffff;
-  padding: 0.6rem 1.25rem;
-  border-radius: var(--radius-md);
-  text-align: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.fgd-toast.error-toast {
-  background: rgba(255, 82, 82, 0.3);
-  border-color: rgba(255, 82, 82, 0.6);
-  color: #ff5252;
-}
-
-.fgd-toast.hidden {
-  display: none;
-}
-
-/* 5x5 Board Wrapper */
+/* Board Wrapper */
 .fgd-board-wrapper {
   background: rgba(0, 0, 0, 0.3);
   border: 3px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--radius-lg);
   padding: 8px;
-  max-width: 440px;
+  max-width: 460px;
   width: 100%;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
 }
 
 .fgd-grid-board {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
   gap: 4px;
   width: 100%;
 }
 
-/* Cell Styles & 5 Vibrant Color Regions */
+/* Cell Styles & 6 Curated Color Regions */
 .fgd-cell {
   aspect-ratio: 1;
   border-radius: var(--radius-sm);
@@ -152,12 +112,13 @@
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.6);
 }
 
-/* 5 Curated Color Region Backgrounds */
+/* 6 Curated Color Region Backgrounds */
 .region-color-0 { background: rgba(255, 128, 171, 0.28); border: 1px solid rgba(255, 128, 171, 0.5); }
 .region-color-1 { background: rgba(255, 215, 64, 0.28); border: 1px solid rgba(255, 215, 64, 0.5); }
 .region-color-2 { background: rgba(64, 196, 255, 0.28); border: 1px solid rgba(64, 196, 255, 0.5); }
 .region-color-3 { background: rgba(105, 240, 174, 0.28); border: 1px solid rgba(105, 240, 174, 0.5); }
 .region-color-4 { background: rgba(188, 170, 164, 0.28); border: 1px solid rgba(188, 170, 164, 0.5); }
+.region-color-5 { background: rgba(224, 64, 251, 0.28); border: 1px solid rgba(224, 64, 251, 0.5); }
 
 .fgd-cell-content {
   font-size: 2.2rem;
@@ -184,39 +145,9 @@
   100% { transform: scale(1); }
 }
 
-/* Game Over Overlay */
-.fgd-gameover-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 10, 20, 0.88);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  border-radius: var(--radius-lg);
-  animation: fadeInExpand 0.3s ease-out;
-}
-
-.fgd-gameover-card {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 2rem;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
-}
-
 /* Responsive Grid */
 @media (max-width: 600px) {
   .fgd-cell-content {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
 }

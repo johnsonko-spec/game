@@ -1,6 +1,6 @@
 /**
- * Frogdoku 5x5 Game Controller (青蛙擺放)
- * Clean Empty Starting Board, Manual Toggle (0->1->2->0), Real-Time Conflict Highlighting, Unlimited Retries (No Auto-Cross, No Hearts)
+ * Frogdoku Game Controller (青蛙擺放 4x4 ~ 6x6)
+ * Dynamic Size (4x4 / 5x5 / 6x6), Clean Empty Starting Board, Manual Toggle (0->1->2->0), Real-Time Conflict Highlighting
  */
 
 class FrogdokuGameController {
@@ -10,11 +10,12 @@ class FrogdokuGameController {
     this.playerName = playerName;
     this.onClose = onCloseCallback;
 
+    this.size = 5;
     this.colorGrid = [];
-    this.userGrid = Array.from({ length: 5 }, () => new Array(5).fill(0)); // 0: Empty, 1: Frog 🐸, 2: Cross ❌
+    this.userGrid = [];
     this.placedFrogs = 0;
 
-    this.difficultyName = '中等';
+    this.difficultyName = '中等 (5x5)';
     this.difficultyKey = 'medium';
 
     this.timerInterval = null;
@@ -25,9 +26,12 @@ class FrogdokuGameController {
 
   init() {
     const puzzle = window.FrogdokuGenerator.generateDailyFrogdoku(this.dateStr);
+    this.size = puzzle.size;
     this.colorGrid = puzzle.colorGrid;
     this.difficultyName = puzzle.difficultyName;
     this.difficultyKey = puzzle.difficultyKey;
+
+    this.userGrid = Array.from({ length: this.size }, () => new Array(this.size).fill(0));
 
     this.render();
     this.startTimer();
@@ -56,8 +60,8 @@ class FrogdokuGameController {
     const conflicts = this.getConflicts();
 
     let cellsHtml = '';
-    for (let r = 0; r < 5; r++) {
-      for (let c = 0; c < 5; c++) {
+    for (let r = 0; r < this.size; r++) {
+      for (let c = 0; c < this.size; c++) {
         const regionId = this.colorGrid[r][c];
         const state = this.userGrid[r][c];
         const isConflict = conflicts.has(`${r}_${c}`);
@@ -94,7 +98,7 @@ class FrogdokuGameController {
             </div>
             <div class="fgd-stat-item">
               <span>🐸 進度:</span>
-              <span id="fgd-frogs-display" class="fgd-stat-val">${this.placedFrogs}</span> / 5 隻
+              <span id="fgd-frogs-display" class="fgd-stat-val">${this.placedFrogs}</span> / ${this.size} 隻
             </div>
           </div>
         </div>
@@ -106,7 +110,7 @@ class FrogdokuGameController {
         </div>
 
         <div class="fgd-board-wrapper">
-          <div class="fgd-grid-board">
+          <div class="fgd-grid-board size-${this.size}" style="grid-template-columns: repeat(${this.size}, 1fr); grid-template-rows: repeat(${this.size}, 1fr);">
             ${cellsHtml}
           </div>
         </div>
@@ -120,8 +124,8 @@ class FrogdokuGameController {
     const conflicts = new Set();
     const frogList = [];
 
-    for (let r = 0; r < 5; r++) {
-      for (let c = 0; c < 5; c++) {
+    for (let r = 0; r < this.size; r++) {
+      for (let c = 0; c < this.size; c++) {
         if (this.userGrid[r][c] === 1) {
           frogList.push({ r, c, region: this.colorGrid[r][c] });
         }
@@ -172,8 +176,6 @@ class FrogdokuGameController {
   }
 
   handleCellClick(r, c) {
-    this.startTimer();
-
     const currentState = this.userGrid[r][c];
     let nextState = 0;
 
@@ -190,8 +192,8 @@ class FrogdokuGameController {
 
   recountFrogs() {
     let count = 0;
-    for (let r = 0; r < 5; r++) {
-      for (let c = 0; c < 5; c++) {
+    for (let r = 0; r < this.size; r++) {
+      for (let c = 0; c < this.size; c++) {
         if (this.userGrid[r][c] === 1) count++;
       }
     }
@@ -199,7 +201,7 @@ class FrogdokuGameController {
   }
 
   checkWinCondition() {
-    if (this.placedFrogs === 5) {
+    if (this.placedFrogs === this.size) {
       const conflicts = this.getConflicts();
       if (conflicts.size === 0) {
         // WIN SUCCESS!
