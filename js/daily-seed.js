@@ -15,6 +15,17 @@ function getTodayDateString(date = new Date()) {
 }
 
 /**
+ * Get date string with day offset
+ * @param {number} offsetDays 
+ * @returns {string}
+ */
+function getDateWithOffset(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return getTodayDateString(d);
+}
+
+/**
  * Converts date string into a 32-bit integer seed
  * @param {string} dateStr 
  * @returns {number}
@@ -46,6 +57,7 @@ function createSeededRandom(seed) {
 
 window.DailySeed = {
   getTodayDateString,
+  getDateWithOffset,
   getSeedFromDate,
   createSeededRandom
 };
