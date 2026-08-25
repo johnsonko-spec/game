@@ -25,6 +25,7 @@ class MemoryGameController {
   init() {
     this.generateCards();
     this.render();
+    this.startTimer();
   }
 
   generateCards() {

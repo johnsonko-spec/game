@@ -34,6 +34,7 @@ class ConnectGameController {
 
     this.generateGrid();
     this.render();
+    this.startTimer();
   }
 
   generateGrid() {

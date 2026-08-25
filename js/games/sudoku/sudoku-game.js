@@ -42,6 +42,7 @@ class SudokuGameController {
     );
 
     this.render();
+    this.startTimer();
   }
 
   startTimer() {

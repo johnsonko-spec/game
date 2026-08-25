@@ -30,6 +30,7 @@ class FrogdokuGameController {
     this.difficultyKey = puzzle.difficultyKey;
 
     this.render();
+    this.startTimer();
   }
 
   startTimer() {
