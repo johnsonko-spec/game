@@ -1,6 +1,7 @@
 /**
  * Mahjong Daily Puzzle Generator
  * Generates seed-based daily mahjong waiting tile puzzles with difficulty filtering
+ * Excludes simple double-sided 2-tile waits (兩頭聽: 1-4, 2-5, 3-6, 4-7, 5-8, 6-9)
  */
 
 /**
@@ -19,7 +20,6 @@ function buildRandomWinningHand(rng) {
   // 1. Pick a Pair (雀頭)
   const pairCandidates = [];
   for (let i = 0; i < 34; i++) pairCandidates.push(i);
-  // Shuffle pair candidates
   for (let i = pairCandidates.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [pairCandidates[i], pairCandidates[j]] = [pairCandidates[j], pairCandidates[i]];
@@ -41,10 +41,9 @@ function buildRandomWinningHand(rng) {
 
   while (meldsAdded < 5 && attempts < 100) {
     attempts++;
-    const isChow = rng() < 0.6; // 60% Chow, 40% Pong for more complex shapes
+    const isChow = rng() < 0.7; // 70% Chow, 30% Pong for more complex shape interleaving
 
     if (isChow) {
-      // Pick random number tile start (1~7)
       const categories = ['wan', 'tiao', 'bing'];
       const cat = categories[Math.floor(rng() * categories.length)];
       const num = Math.floor(rng() * 7) + 1; // 1 ~ 7
@@ -60,7 +59,6 @@ function buildRandomWinningHand(rng) {
         meldsAdded++;
       }
     } else {
-      // Pong
       const randomIdx = Math.floor(rng() * 34);
       if (canAdd(randomIdx, 3)) {
         counts[randomIdx] += 3;
@@ -71,7 +69,6 @@ function buildRandomWinningHand(rng) {
 
   if (meldsAdded < 5) return null;
 
-  // Flatten counts to 17 tiles array
   const hand17 = [];
   for (let i = 0; i < 34; i++) {
     for (let c = 0; c < counts[i]; c++) {
@@ -83,35 +80,40 @@ function buildRandomWinningHand(rng) {
 }
 
 /**
- * Check if candidate hand meets difficulty criteria for mahjong veterans (1-2s thought required)
+ * Check if candidate hand meets difficulty criteria:
+ * - Must NOT be a simple double-sided 2-tile wait (兩頭聽: 1-4, 2-5, 3-6, 4-7, 5-8, 6-9)
+ * - Prefers multi-way waits (3~9面聽) or non-obvious composite waits
  * @param {Array<string>} hand16 
  * @param {Array<string>} waitingList 
  * @returns {boolean}
  */
 function meetsDifficultyCriteria(hand16, waitingList) {
-  // 1. Must have at least 2 waiting tiles (多面聽: 2~9 聽)
+  // 1. Must have at least 2 waiting tiles
   if (waitingList.length < 2) return false;
 
   // 2. Hand must involve at least 2 categories (萬/條/餅/字)
   const categories = new Set(hand16.map(id => window.MahjongTiles.TILE_MAP[id].category));
   if (categories.size < 2) return false;
 
-  // 3. Exclude hands where waiting tiles are too trivially obvious (e.g. 15 single cards)
-  // Check if hand has interesting combinations (e.g. at least 3 waiting tiles OR 2+ composite waits)
+  // 3. Multi-way waits (3面聽 ~ 9面聽) are always great!
   if (waitingList.length >= 3) return true;
 
-  // If 2 waiting tiles, make sure they are not just a simple double-sided wait like 2m3m (waiting 1m, 4m)
-  // Check if waiting tiles belong to different suits or involve honours
-  const waitCats = new Set(waitingList.map(id => window.MahjongTiles.TILE_MAP[id].category));
-  if (waitCats.size > 1) return true; // e.g. waiting for a Wan AND a Tiao or Honour
+  // 4. If exactly 2 waiting tiles, STRICTLY REJECT simple double-sided waits (兩頭聽)
+  if (waitingList.length === 2) {
+    const t1 = window.MahjongTiles.TILE_MAP[waitingList[0]];
+    const t2 = window.MahjongTiles.TILE_MAP[waitingList[1]];
 
-  // If wait tiles are same suit, check distance between them (e.g. not consecutive 1-4, but like 1-7 or 2-5)
-  const waitNums = waitingList.map(id => window.MahjongTiles.TILE_MAP[id].number).sort((a, b) => a - b);
-  if (waitNums.length >= 2 && Math.abs(waitNums[1] - waitNums[0]) >= 3) {
-    return true; // Non-adjacent wait
+    // Check if same suit
+    if (t1.category === t2.category && t1.category !== 'zi') {
+      const diff = Math.abs(t2.number - t1.number);
+      // Diff === 3 (e.g. 1 and 4, 2 and 5, 3 and 6, 4 and 7, 5 and 8, 6 and 9) is a simple double-sided wait (兩頭聽)
+      if (diff === 3) {
+        return false; // REJECT simple 兩頭聽!
+      }
+    }
   }
 
-  return false;
+  return true;
 }
 
 /**
@@ -125,7 +127,7 @@ function generateDailyPuzzle(dateStr) {
 
   let hand16 = null;
   let waitingList = [];
-  let maxAttempts = 500;
+  let maxAttempts = 1000;
 
   while (maxAttempts-- > 0) {
     const hand17 = buildRandomWinningHand(rng);
@@ -139,7 +141,7 @@ function generateDailyPuzzle(dateStr) {
     // Solve waiting tiles
     const waits = window.MahjongSolver.findWaitingTiles(candidate16);
 
-    // Check difficulty
+    // Check difficulty filtering
     if (meetsDifficultyCriteria(candidate16, waits)) {
       hand16 = candidate16;
       waitingList = waits;
@@ -147,10 +149,10 @@ function generateDailyPuzzle(dateStr) {
     }
   }
 
-  // Fallback fallback if high difficulty constraints fail (safeguard)
+  // Fallback complex multi-way puzzle if generator loop exhausts
   if (!hand16) {
-    // Standard default complex puzzle: 1m 2m 3m 4m 5m 6m 7m 8m 9m 1s 2s 3s 4s 5s 6s 7s (Nine Gates variant waiting 1s, 4s, 7s)
-    hand16 = ['1m', '2m', '3m', '4m', '5m', '6m', '7m', '8m', '9m', '1s', '2s', '3s', '4s', '5s', '6s', '7s'];
+    // 3-way composite wait hand: 2m 3m 4m 5m 6m 7m 8m 9m 1s 2s 3s 4s 5s 6s 7s (waits 1s, 4s, 7s)
+    hand16 = ['2m', '3m', '4m', '5m', '6m', '7m', '8m', '9m', '1s', '2s', '3s', '4s', '5s', '6s', '7s', '7s'];
     waitingList = window.MahjongSolver.findWaitingTiles(hand16);
   }
 
