@@ -51,7 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
       desc: '填入 1~6 數字，同行同列同宮不重複！',
       status: 'active'
     },
-    { id: 'game5', name: '算術快手', icon: '🧮', desc: '極速心算與符號組合', status: 'coming_soon' },
+    {
+      id: 'frogdoku',
+      name: '青蛙擺放',
+      icon: '🐸',
+      desc: '每行每列每色1隻青蛙，青蛙不能相鄰！',
+      status: 'active'
+    },
     { id: 'game6', name: '記憶矩陣', icon: '🧠', desc: '空間與順序記憶挑戰', status: 'coming_soon' }
   ];
 
@@ -173,6 +179,20 @@ document.addEventListener('DOMContentLoaded', () => {
         controller.init();
       } else if (gameId === 'sudoku') {
         const controller = new window.SudokuGameController(
+          fullOverlay,
+          todayStr,
+          playerName,
+          (completed) => {
+            if (completed) {
+              showAdThenLeaderboard(gameId);
+            } else {
+              collapseToHomeGrid();
+            }
+          }
+        );
+        controller.init();
+      } else if (gameId === 'frogdoku') {
+        const controller = new window.FrogdokuGameController(
           fullOverlay,
           todayStr,
           playerName,
