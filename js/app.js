@@ -1,0 +1,169 @@
+/**
+ * Main Application Entrance & Controller
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  const playerInput = document.getElementById('player-name-input');
+  const cardsGrid = document.getElementById('cards-grid');
+  const fullOverlay = document.getElementById('full-game-overlay');
+
+  const todayStr = window.DailySeed.getTodayDateString();
+
+  // 1. Initialize Player Name
+  const savedName = window.GameStorage.getPlayerName();
+  if (savedName) {
+    playerInput.value = savedName;
+  }
+
+  // Auto-save on input change without submit button
+  playerInput.addEventListener('input', (e) => {
+    window.GameStorage.setPlayerName(e.target.value);
+    playerInput.classList.remove('input-error');
+  });
+
+  // 2. Define 6 Game Cards Metadata
+  const gamesList = [
+    {
+      id: 'mahjong',
+      name: '麻將聽牌',
+      icon: '🀄',
+      desc: '給定 16 張聽牌手牌，點擊找出所有能胡的牌！',
+      status: 'active'
+    },
+    { id: 'game2', name: '數獨迷宮', icon: '🧩', desc: '每日精選邏輯關卡', status: 'coming_soon' },
+    { id: 'game3', name: '成語大師', icon: '✍️', desc: '填字猜詞每日考驗', status: 'coming_soon' },
+    { id: 'game4', name: '密碼破解', icon: '🔐', desc: '邏輯推理猜數字', status: 'coming_soon' },
+    { id: 'game5', name: '算術快手', icon: '🧮', desc: '極速心算與符號組合', status: 'coming_soon' },
+    { id: 'game6', name: '記憶矩陣', icon: '🧠', desc: '空間與順序記憶挑戰', status: 'coming_soon' }
+  ];
+
+  // 3. Render Game Cards
+  function renderCards() {
+    cardsGrid.innerHTML = gamesList.map(game => {
+      if (game.status === 'coming_soon') {
+        return `
+          <div class="game-card is-coming-soon">
+            <div class="card-header">
+              <span class="card-badge badge-soon">建立中</span>
+            </div>
+            <div class="card-body">
+              <div class="card-icon">${game.icon}</div>
+              <div class="card-title">${game.name}</div>
+              <div class="card-desc">敬請期待，關卡籌備中...</div>
+            </div>
+            <div class="card-footer">
+              <span>🚧 尚未開放</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Active Game
+      const completion = window.GameStorage.getGameCompletion(game.id, todayStr);
+      const isDone = !!completion;
+
+      return `
+        <div class="game-card is-active" data-game-id="${game.id}">
+          <div class="card-header">
+            <span class="card-badge ${isDone ? 'badge-completed' : 'badge-active'}">
+              ${isDone ? '🏆 今日已通關' : '🟢 每日關卡'}
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="card-icon">${game.icon}</div>
+            <div class="card-title">${game.name}</div>
+            <div class="card-desc">${game.desc}</div>
+          </div>
+          <div class="card-footer">
+            <span>${isDone ? '查看排行榜' : '點擊開始遊戲'}</span>
+            <span class="cta-arrow">→</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Bind card click listeners
+    const activeCards = cardsGrid.querySelectorAll('.game-card.is-active');
+    activeCards.forEach(cardEl => {
+      cardEl.addEventListener('click', () => {
+        const gameId = cardEl.getAttribute('data-game-id');
+        handleGameCardClick(gameId);
+      });
+    });
+  }
+
+  // 4. Handle Active Game Card Click
+  function handleGameCardClick(gameId) {
+    const playerName = playerInput.value.trim();
+    if (!playerName) {
+      playerInput.focus();
+      playerInput.classList.add('input-error');
+      alert('請先輸入玩家姓名再開始遊戲！');
+      return;
+    }
+
+    if (gameId === 'mahjong') {
+      const completion = window.GameStorage.getGameCompletion('mahjong', todayStr);
+
+      // Hide grid and show full-area expansion overlay (Option C)
+      cardsGrid.style.display = 'none';
+      fullOverlay.classList.add('is-visible');
+
+      if (completion) {
+        // Show Leaderboard
+        showLeaderboardView('mahjong');
+      } else {
+        // Start Game
+        const controller = new window.MahjongGameController(
+          fullOverlay,
+          todayStr,
+          playerName,
+          (completed) => {
+            if (completed) {
+              showLeaderboardView('mahjong');
+            } else {
+              // Collapse back to grid
+              fullOverlay.classList.remove('is-visible');
+              fullOverlay.innerHTML = '';
+              cardsGrid.style.display = 'grid';
+              renderCards();
+            }
+          }
+        );
+        controller.init();
+      }
+    }
+  }
+
+  // 5. Display Leaderboard in Full Overlay View
+  function showLeaderboardView(gameId) {
+    const list = window.GameStorage.getLeaderboard(gameId, todayStr);
+    const playerName = playerInput.value.trim();
+
+    fullOverlay.innerHTML = `
+      <div class="lb-view-wrapper">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+          <button id="lb-back-btn" class="btn-icon">← 返回首頁</button>
+          <span style="color:var(--text-muted); font-size:0.9rem;">📅 日期: ${todayStr}</span>
+        </div>
+        <div id="lb-mount"></div>
+      </div>
+    `;
+
+    const mount = fullOverlay.querySelector('#lb-mount');
+    window.LeaderboardUI.renderLeaderboard(mount, list, playerName, '麻將聽牌 今日排行榜');
+
+    const backBtn = fullOverlay.querySelector('#lb-back-btn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        fullOverlay.classList.remove('is-visible');
+        fullOverlay.innerHTML = '';
+        cardsGrid.style.display = 'grid';
+        renderCards();
+      });
+    }
+  }
+
+  // Initial render
+  renderCards();
+});
