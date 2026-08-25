@@ -142,10 +142,20 @@ function getTiaoSvg(num) {
               bamboo(8, 19, 5, 12, green) + bamboo(17.5, 19, 5, 12, green) + bamboo(27, 19, 5, 12, green) +
               bamboo(8, 34, 5, 12, blue)  + bamboo(17.5, 34, 5, 12, blue)  + bamboo(27, 34, 5, 12, blue);
   } else if (num === 8) {
-    // Slanted/M-shape bamboos for 8-Tiao
-    content = bamboo(8, 7, 5, 13, green) + bamboo(17.5, 7, 5, 13, green) + bamboo(27, 7, 5, 13, green) +
-              bamboo(8, 28, 5, 13, blue)  + bamboo(17.5, 28, 5, 13, blue)  + bamboo(27, 28, 5, 13, blue) +
-              `<line x1="5" y1="20" x2="35" y2="20" stroke="${red}" stroke-width="2"/>`;
+    // Traditional 8-Tiao (八條): 4 slanted M-shape diagonal bamboos on top and 4 W-shape on bottom (clearly distinct from 6-Tiao)
+    content = `
+      <!-- Top M-shape 4 slanted bamboos -->
+      <line x1="7" y1="6" x2="13" y2="21" stroke="${green}" stroke-width="4" stroke-linecap="round"/>
+      <line x1="13" y1="21" x2="20" y2="6" stroke="${green}" stroke-width="4" stroke-linecap="round"/>
+      <line x1="20" y1="6" x2="27" y2="21" stroke="${blue}" stroke-width="4" stroke-linecap="round"/>
+      <line x1="27" y1="21" x2="33" y2="6" stroke="${blue}" stroke-width="4" stroke-linecap="round"/>
+
+      <!-- Bottom W-shape 4 slanted bamboos -->
+      <line x1="7" y1="44" x2="13" y2="29" stroke="${blue}" stroke-width="4" stroke-linecap="round"/>
+      <line x1="13" y1="29" x2="20" y2="44" stroke="${blue}" stroke-width="4" stroke-linecap="round"/>
+      <line x1="20" y1="44" x2="27" y2="29" stroke="${green}" stroke-width="4" stroke-linecap="round"/>
+      <line x1="27" y1="29" x2="33" y2="44" stroke="${green}" stroke-width="4" stroke-linecap="round"/>
+    `;
   } else if (num === 9) {
     content = bamboo(8, 6, 5, 11, green) + bamboo(17.5, 6, 5, 11, blue) + bamboo(27, 6, 5, 11, red) +
               bamboo(8, 20, 5, 11, green) + bamboo(17.5, 20, 5, 11, blue) + bamboo(27, 20, 5, 11, red) +
