@@ -4,40 +4,10 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const playerInput = document.getElementById('player-name-input');
-  const resetBtn = document.getElementById('reset-all-records-btn');
   const cardsGrid = document.getElementById('cards-grid');
   const fullOverlay = document.getElementById('full-game-overlay');
 
-  const prevStageBtn = document.getElementById('prev-stage-btn');
-  const nextStageBtn = document.getElementById('next-stage-btn');
-  const currentStageDateEl = document.getElementById('current-stage-date');
-
-  let currentOffsetDays = 0;
-  let activeStageDate = window.DailySeed.getDateWithOffset(currentOffsetDays);
-
-  function updateStageDateUI() {
-    activeStageDate = window.DailySeed.getDateWithOffset(currentOffsetDays);
-    if (currentStageDateEl) {
-      currentStageDateEl.textContent = activeStageDate;
-    }
-  }
-
-  // Stage Navigation Listeners
-  if (prevStageBtn) {
-    prevStageBtn.addEventListener('click', () => {
-      currentOffsetDays--;
-      updateStageDateUI();
-      renderCards();
-    });
-  }
-
-  if (nextStageBtn) {
-    nextStageBtn.addEventListener('click', () => {
-      currentOffsetDays++;
-      updateStageDateUI();
-      renderCards();
-    });
-  }
+  const todayStr = window.DailySeed.getTodayDateString();
 
   // 1. Initialize Player Name
   const savedName = window.GameStorage.getPlayerName();
@@ -50,26 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.GameStorage.setPlayerName(e.target.value);
     playerInput.classList.remove('input-error');
   });
-
-  // Reset all records button
-  if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-      if (confirm('確定要清除所有本機遊玩紀錄與跨裝置排行榜，以便重新測試嗎？')) {
-        window.GameStorage.clearAllLocalRecords();
-
-        // Wipe Firebase Realtime Database leaderboards
-        fetch('https://minigame-759c4-default-rtdb.firebaseio.com/leaderboards.json', {
-          method: 'DELETE'
-        }).then(() => {
-          alert('🧹 所有遊玩紀錄與全網排行榜已成功清除！可開始全新測試。');
-          renderCards();
-        }).catch(() => {
-          alert('🧹 本機遊玩紀錄已成功清除！');
-          renderCards();
-        });
-      }
-    });
-  }
 
   // 2. Define 6 Game Cards Metadata
   const gamesList = [
@@ -133,14 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Active Game
-      const completion = window.GameStorage.getGameCompletion(game.id, activeStageDate);
+      const completion = window.GameStorage.getGameCompletion(game.id, todayStr);
       const isDone = !!completion;
 
       return `
         <div class="game-card is-active" data-game-id="${game.id}">
           <div class="card-header">
             <span class="card-badge ${isDone ? 'badge-completed' : 'badge-active'}">
-              ${isDone ? '🏆 本關已通關' : '🟢 每日關卡'}
+              ${isDone ? '🏆 今日已通關' : '🟢 每日關卡'}
             </span>
           </div>
           <div class="card-body">
@@ -176,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const completion = window.GameStorage.getGameCompletion(gameId, activeStageDate);
+    const completion = window.GameStorage.getGameCompletion(gameId, todayStr);
 
     cardsGrid.style.display = 'none';
     fullOverlay.classList.add('is-visible');
@@ -188,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gameId === 'mahjong') {
         const controller = new window.MahjongGameController(
           fullOverlay,
-          activeStageDate,
+          todayStr,
           playerName,
           (completed) => {
             if (completed) {
@@ -202,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (gameId === 'memory') {
         const controller = new window.MemoryGameController(
           fullOverlay,
-          activeStageDate,
+          todayStr,
           playerName,
           (completed) => {
             if (completed) {
@@ -216,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (gameId === 'connect') {
         const controller = new window.ConnectGameController(
           fullOverlay,
-          activeStageDate,
+          todayStr,
           playerName,
           (completed) => {
             if (completed) {
@@ -230,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (gameId === 'sudoku') {
         const controller = new window.SudokuGameController(
           fullOverlay,
-          activeStageDate,
+          todayStr,
           playerName,
           (completed) => {
             if (completed) {
@@ -244,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (gameId === 'frogdoku') {
         const controller = new window.FrogdokuGameController(
           fullOverlay,
-          activeStageDate,
+          todayStr,
           playerName,
           (completed) => {
             if (completed) {
@@ -270,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function showAdThenLeaderboard(gameId) {
     cardsGrid.style.display = 'none';
     fullOverlay.classList.add('is-visible');
-    window.SponsorAd.renderSponsorAd(fullOverlay, activeStageDate, gameId, () => {
+    window.SponsorAd.renderSponsorAd(fullOverlay, todayStr, gameId, () => {
       showLeaderboardView(gameId);
     });
   }
@@ -285,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="lb-view-wrapper">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
           <button id="lb-back-btn" class="btn-icon">← 返回首頁</button>
-          <span style="color:var(--text-muted); font-size:0.9rem;">📅 關卡日期: ${activeStageDate}</span>
+          <span style="color:var(--text-muted); font-size:0.9rem;">📅 日期: ${todayStr}</span>
         </div>
         <div id="lb-mount"></div>
       </div>
@@ -294,8 +244,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const mount = fullOverlay.querySelector('#lb-mount');
 
     // Realtime subscription to Firebase cross-device database
-    window.GameStorage.subscribeRealtimeLeaderboard(gameId, activeStageDate, (realtimeList) => {
-      window.LeaderboardUI.renderLeaderboard(mount, realtimeList, playerName, `${titleText} 關卡實時排行榜`);
+    window.GameStorage.subscribeRealtimeLeaderboard(gameId, todayStr, (realtimeList) => {
+      window.LeaderboardUI.renderLeaderboard(mount, realtimeList, playerName, `${titleText} 今日跨裝置實時排行榜`);
     });
 
     const backBtn = fullOverlay.querySelector('#lb-back-btn');
@@ -307,6 +257,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Initial render
-  updateStageDateUI();
   renderCards();
 });
