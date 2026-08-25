@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const playerInput = document.getElementById('player-name-input');
+  const resetBtn = document.getElementById('reset-all-records-btn');
   const cardsGrid = document.getElementById('cards-grid');
   const fullOverlay = document.getElementById('full-game-overlay');
 
@@ -20,6 +21,26 @@ document.addEventListener('DOMContentLoaded', () => {
     window.GameStorage.setPlayerName(e.target.value);
     playerInput.classList.remove('input-error');
   });
+
+  // Reset all records button
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (confirm('確定要清除所有本機遊玩紀錄與跨裝置排行榜，以便重新測試嗎？')) {
+        window.GameStorage.clearAllLocalRecords();
+
+        // Wipe Firebase Realtime Database leaderboards
+        fetch('https://minigame-759c4-default-rtdb.firebaseio.com/leaderboards.json', {
+          method: 'DELETE'
+        }).then(() => {
+          alert('🧹 所有遊玩紀錄與全網排行榜已成功清除！可開始全新測試。');
+          renderCards();
+        }).catch(() => {
+          alert('🧹 本機遊玩紀錄已成功清除！');
+          renderCards();
+        });
+      }
+    });
+  }
 
   // 2. Define 6 Game Cards Metadata
   const gamesList = [
