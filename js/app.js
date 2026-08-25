@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-desc">${game.desc}</div>
           </div>
           <div class="card-footer">
-            <span>${isDone ? '查看跨裝置排行榜' : '點擊開始遊戲'}</span>
+            <span>${isDone ? '查看排行榜' : '點擊開始遊戲'}</span>
             <span class="cta-arrow">→</span>
           </div>
         </div>
@@ -110,8 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
       fullOverlay.classList.add('is-visible');
 
       if (completion) {
-        // Show Leaderboard
-        showLeaderboardView('mahjong');
+        // Show 5s Sponsor Ad first, then Leaderboard
+        showAdThenLeaderboard(gameId);
       } else {
         // Start Game
         const controller = new window.MahjongGameController(
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
           playerName,
           (completed) => {
             if (completed) {
-              showLeaderboardView('mahjong');
+              showAdThenLeaderboard(gameId);
             } else {
               // Collapse back to grid
               fullOverlay.classList.remove('is-visible');
@@ -135,7 +135,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 5. Display Leaderboard in Full Overlay View with Realtime Sync
+  // 5. Show 5s Sponsor Ad then transition to Leaderboard
+  function showAdThenLeaderboard(gameId) {
+    cardsGrid.style.display = 'none';
+    fullOverlay.classList.add('is-visible');
+    window.SponsorAd.renderSponsorAd(fullOverlay, todayStr, gameId, () => {
+      showLeaderboardView(gameId);
+    });
+  }
+
+  // 6. Display Leaderboard in Full Overlay View with Realtime Sync
   function showLeaderboardView(gameId) {
     const playerName = playerInput.value.trim();
 
