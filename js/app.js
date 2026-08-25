@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-desc">${game.desc}</div>
           </div>
           <div class="card-footer">
-            <span>${isDone ? '查看排行榜' : '點擊開始遊戲'}</span>
+            <span>${isDone ? '查看跨裝置排行榜' : '點擊開始遊戲'}</span>
             <span class="cta-arrow">→</span>
           </div>
         </div>
@@ -135,9 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 5. Display Leaderboard in Full Overlay View
+  // 5. Display Leaderboard in Full Overlay View with Realtime Sync
   function showLeaderboardView(gameId) {
-    const list = window.GameStorage.getLeaderboard(gameId, todayStr);
     const playerName = playerInput.value.trim();
 
     fullOverlay.innerHTML = `
@@ -151,7 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     const mount = fullOverlay.querySelector('#lb-mount');
-    window.LeaderboardUI.renderLeaderboard(mount, list, playerName, '麻將聽牌 今日排行榜');
+
+    // Realtime subscription to Firebase cross-device database
+    window.GameStorage.subscribeRealtimeLeaderboard(gameId, todayStr, (realtimeList) => {
+      window.LeaderboardUI.renderLeaderboard(mount, realtimeList, playerName, '麻將聽牌 今日跨裝置實時排行榜');
+    });
 
     const backBtn = fullOverlay.querySelector('#lb-back-btn');
     if (backBtn) {
