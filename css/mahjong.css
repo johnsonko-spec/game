@@ -120,16 +120,16 @@
   align-items: center;
 }
 
-/* --- Tile Component --- */
+/* --- Mahjong Tile Graphic Styling --- */
 .mj-tile {
   width: 44px;
   height: 62px;
-  background: #fdfbf7;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f4ea 100%);
   border-radius: 6px;
   box-shadow: 
-    0 4px 0 #c2b79b,
+    0 4px 0 #bfae8b,
     0 6px 12px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.9);
   position: relative;
   user-select: none;
   display: inline-flex;
@@ -137,9 +137,27 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  overflow: hidden;
 }
 
-.mj-tile-face {
+.mj-tile-body {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+/* SVG Patterns */
+.mj-svg-pattern {
+  width: 86%;
+  height: 86%;
+  display: block;
+}
+
+/* Wan Tiles Calligraphy */
+.mj-tile-wan-face {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -147,31 +165,41 @@
   line-height: 1;
 }
 
-.mj-main {
-  font-size: 1.35rem;
+.mj-wan-num {
+  font-size: 1.3rem;
   font-weight: 900;
+  color: #d32f2f;
+  font-family: 'Noto Sans TC', serif;
 }
 
-.mj-sub {
-  font-size: 0.7rem;
-  font-weight: 700;
+.mj-wan-char {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #d32f2f;
   margin-top: 2px;
 }
 
-/* Tile Category Specific Colors */
-.mj-wan .mj-main, .mj-wan .mj-sub { color: #d32f2f; }
-.mj-tiao .mj-main, .mj-tiao .mj-sub { color: #2e7d32; }
-.mj-bing .mj-main, .mj-bing .mj-sub { color: #1565c0; }
-.mj-zi .mj-main { color: #263238; }
+/* Zi Tiles (Honours) */
+.mj-tile-zi-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-.mj-zi.color-red .mj-main { color: #d32f2f; }
-.mj-zi.color-green .mj-main { color: #1b5e20; }
-.mj-zi.color-white .mj-main {
+.mj-zi-char {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #263238;
+}
+
+.mj-tile-zi-face.color-red .mj-zi-char { color: #d32f2f; }
+.mj-tile-zi-face.color-green .mj-zi-char { color: #1b5e20; }
+.mj-tile-zi-face.color-white .mj-zi-char {
   color: #0288d1;
   border: 2px solid #0288d1;
-  padding: 2px 4px;
+  padding: 2px 5px;
   border-radius: 3px;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
 }
 
 /* Selectable Tile State */
@@ -182,7 +210,7 @@
 .mj-tile.is-selectable:hover {
   transform: translateY(-3px);
   box-shadow: 
-    0 7px 0 #c2b79b,
+    0 7px 0 #bfae8b,
     0 10px 16px rgba(0, 0, 0, 0.5);
 }
 
@@ -295,12 +323,12 @@
     height: 52px;
   }
 
-  .mj-main {
+  .mj-wan-num {
     font-size: 1.1rem;
   }
 
-  .mj-sub {
-    font-size: 0.6rem;
+  .mj-wan-char {
+    font-size: 0.65rem;
   }
 
   .option-row {
