@@ -1,6 +1,7 @@
 /**
  * Mini Sudoku 6x6 Game Controller (迷你數獨)
  * 6x6 Grid, 2x3 Blocks, Pencil Note-Taking Mode, Real-Time Conflict Detection, No Hint Feature
+ * Displays 20% Easy / 40% Medium / 40% Hard daily difficulty badge
  */
 
 class SudokuGameController {
@@ -14,6 +15,9 @@ class SudokuGameController {
     this.solutionBoard = [];
     this.userBoard = [];
     this.notesBoard = []; // 6x6 array of Sets
+
+    this.difficultyName = '中等';
+    this.difficultyKey = 'medium';
 
     this.selectedRow = -1;
     this.selectedCol = -1;
@@ -29,6 +33,8 @@ class SudokuGameController {
     const puzzle = window.SudokuSolver.generateDailySudoku(this.dateStr);
     this.givenBoard = puzzle.givenBoard;
     this.solutionBoard = puzzle.solutionBoard;
+    this.difficultyName = puzzle.difficultyName;
+    this.difficultyKey = puzzle.difficultyKey;
 
     this.userBoard = this.givenBoard.map(row => [...row]);
     this.notesBoard = Array.from({ length: 6 }, () => 
@@ -103,6 +109,8 @@ class SudokuGameController {
       }
     }
 
+    const diffBadgeClass = `sdk-diff-${this.difficultyKey}`;
+
     this.container.innerHTML = `
       <div class="sudoku-game-panel">
         <div class="sdk-header">
@@ -111,6 +119,10 @@ class SudokuGameController {
             <h2 class="sdk-title">🧩 迷你數獨 每日關卡</h2>
           </div>
           <div class="sdk-stats-bar">
+            <div class="sdk-stat-item">
+              <span>⚡ 難度:</span>
+              <span class="sdk-diff-badge ${diffBadgeClass}">${this.difficultyName}</span>
+            </div>
             <div class="sdk-stat-item">
               <span>⏱ 用時:</span>
               <span id="sdk-timer-display" class="sdk-stat-val">00:00.0</span>

@@ -1,5 +1,6 @@
 /**
  * 6x6 Mini Sudoku Solver & Daily Unique-Solution Puzzle Generator
+ * Supports 20% Easy (15 holes), 40% Medium (19 holes), 40% Hard (21 holes) distribution based on date seed
  */
 
 /**
@@ -99,18 +100,41 @@ function solve6x6(board) {
 }
 
 /**
- * Generate a daily 6x6 Mini Sudoku puzzle with unique solution guarantee
+ * Generate a daily 6x6 Mini Sudoku puzzle with deterministic difficulty distribution:
+ * 20% Easy (15 holes), 40% Medium (19 holes), 40% Hard (21 holes)
  * @param {string} dateStr YYYY-MM-DD
- * @returns {{ givenBoard: Array<Array<number>>, solutionBoard: Array<Array<number>> }}
+ * @returns {{ givenBoard: Array<Array<number>>, solutionBoard: Array<Array<number>>, difficultyName: string, difficultyKey: string, targetHoles: number }}
  */
 function generateDailySudoku(dateStr) {
   const seed = window.DailySeed.getSeedFromDate(`${dateStr}_sudoku`);
   const rng = window.DailySeed.createSeededRandom(seed);
 
-  // 1. Create a complete valid 6x6 solution board
+  // 1. Determine Difficulty Level based on 20% / 40% / 40% probability
+  const randVal = Math.floor(rng() * 100);
+  let difficultyName = '中等';
+  let difficultyKey = 'medium';
+  let targetHoles = 19;
+
+  if (randVal < 20) {
+    // 20% Easy
+    difficultyName = '簡單';
+    difficultyKey = 'easy';
+    targetHoles = 15;
+  } else if (randVal < 60) {
+    // 40% Medium
+    difficultyName = '中等';
+    difficultyKey = 'medium';
+    targetHoles = 19;
+  } else {
+    // 40% Hard
+    difficultyName = '困難';
+    difficultyKey = 'hard';
+    targetHoles = 21;
+  }
+
+  // 2. Create a complete valid 6x6 solution board
   const solutionBoard = Array.from({ length: 6 }, () => new Array(6).fill(0));
 
-  // Fill diagonal blocks first with random permutations
   const nums1 = [1, 2, 3, 4, 5, 6];
   for (let i = nums1.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
@@ -126,7 +150,7 @@ function generateDailySudoku(dateStr) {
 
   solve6x6(solutionBoard);
 
-  // 2. Dig holes while preserving unique solution
+  // 3. Dig holes while preserving unique solution
   const givenBoard = solutionBoard.map(row => [...row]);
   const cellPositions = [];
   for (let r = 0; r < 6; r++) {
@@ -135,23 +159,18 @@ function generateDailySudoku(dateStr) {
     }
   }
 
-  // Shuffle positions
   for (let i = cellPositions.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [cellPositions[i], cellPositions[j]] = [cellPositions[j], cellPositions[i]];
   }
 
-  // Remove about 18~20 cells to leave ~16-18 given numbers
   let holesDug = 0;
-  const targetHoles = 19;
-
   for (const pos of cellPositions) {
     if (holesDug >= targetHoles) break;
 
     const temp = givenBoard[pos.r][pos.c];
     givenBoard[pos.r][pos.c] = 0;
 
-    // Verify unique solution
     const testBoard = givenBoard.map(row => [...row]);
     if (countSolutions(testBoard, 2) !== 1) {
       givenBoard[pos.r][pos.c] = temp; // Restore if multiple solutions exist
@@ -162,7 +181,10 @@ function generateDailySudoku(dateStr) {
 
   return {
     givenBoard,
-    solutionBoard
+    solutionBoard,
+    difficultyName,
+    difficultyKey,
+    targetHoles
   };
 }
 

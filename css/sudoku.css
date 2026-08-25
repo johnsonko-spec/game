@@ -56,6 +56,32 @@
   color: var(--accent-cyan);
 }
 
+/* Difficulty Badges */
+.sdk-diff-badge {
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+}
+
+.sdk-diff-easy {
+  background: rgba(0, 230, 118, 0.2);
+  color: #00e676;
+  border: 1px solid rgba(0, 230, 118, 0.4);
+}
+
+.sdk-diff-medium {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+}
+
+.sdk-diff-hard {
+  background: rgba(255, 82, 82, 0.2);
+  color: #ff5252;
+  border: 1px solid rgba(255, 82, 82, 0.4);
+}
+
 /* 6x6 Board Wrapper */
 .sdk-grid-wrapper {
   background: rgba(0, 0, 0, 0.3);
